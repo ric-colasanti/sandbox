@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Aberdeen Buildings</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+          fetch('Aberdeen.json')
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        // Do something with the JSON data
+        console.log(data);
+        draw(data)
+
+      })
+      .catch(function (error) {
+        console.error('Error:', error);
+      });
+
+      function draw(data) {
+      var stats = data['stats']
+      var features = data['features']
+      var projection = d3.geoEquirectangular();
+
+      var scale = Math.min(
+        800 / (stats.lon[0] - stats.lon[1]) * 360 / (2 * Math.PI),
+        800 / (stats.lat[0] - stats.lat[1]) * 360 / (2 * Math.PI)
+      );
+
+      var aspect = (stats.lon[1] - stats.lon[0]) / (stats.lat[1] - stats.lat[0]);
+      var adjustedScale = scale * Math.min(1, 800 / (800 * aspect));
+
+      // Adjust the projection's translate and scale properties
+      projection
+        .center([stats.center[0],stats.center[1]])
+        .scale(adjustedScale*1.3)
+     console.log(stats.center[0], stats.center[1],adjustedScale)
+
+      var path = d3.geoPath().projection(projection);
+
+      // Create a SVG element
+      var svg = d3.select('#map')
+        .append('svg')
+        .attr('width', 600)
+        .attr('height', 600);
+
+      // Bind the GeoJSON data to the SVG element
+      svg.selectAll('path')
+        .data(features)
+        .enter().append('path')
+        .attr('d', path)
+        .style('fill', function (d) {
+          return "gray";
+          switch (d.id) {
+            case "1":
+              return "red";
+            case "2":
+              return "blue";
+            default:
+              return "lightgray";
+          }
+
+        });
+    }
+
+
+    </script>
+  </body>
+</html>
